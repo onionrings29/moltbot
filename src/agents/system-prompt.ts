@@ -120,9 +120,20 @@ function buildChunkingSection(params: {
   const markerList = markers.map((m) => `\`${m}\``).join(", ");
   return [
     "## Message Chunking",
-    `For long responses, split your output into shorter messages using: ${markerList}`,
-    `Example: "Here's the first part.${markers[0]}Here's the second part.${markers[0]}"`,
+    `For multi-step responses or long explanations, split into separate messages using: ${markerList}`,
+    `Example: "Step 1: Do this.${markers[0]}Step 2: Then do that.${markers[0]}Step 3: Finally..."`,
     `The markers will be removed and each part sent as a separate message.`,
+    "",
+    "DO NOT chunk:",
+    "- Lists, bullet points, or numbered items",
+    "- Code blocks or technical documentation",
+    "- Instructions or reference material",
+    "- Information that needs to be read together",
+    "",
+    "ONLY chunk when:",
+    "- Each part is a complete, independent message",
+    "- The user can read and understand each part separately",
+    "- Splitting improves readability (e.g., step-by-step guides)",
     "",
   ];
 }
