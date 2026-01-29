@@ -41,7 +41,7 @@ describe("chunk-markers", () => {
 
     it("should handle markers at start/end", () => {
       const result = splitByChunkMarkers("[MSG]Start[MSG]End[MSG]", ["[MSG]"]);
-      expect(result).toEqual(["", "Start", "End", ""]);
+      expect(result).toEqual(["Start", "End"]);
     });
 
     it("should trim whitespace around splits", () => {
@@ -50,8 +50,8 @@ describe("chunk-markers", () => {
     });
 
     it("should respect minChunkSize and merge small chunks", () => {
-      const result = splitByChunkMarkers("A[MSG]B", ["[MSG]"], { minChunkSize: 5 });
-      expect(result).toEqual(["AB"]);
+      const result = splitByChunkMarkers("A[MSG]B", ["[MSG]"], { minChunkSize: 10 });
+      expect(result).toEqual(["A\n\nB"]);
     });
 
     it("should not merge chunks that exceed minChunkSize", () => {

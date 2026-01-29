@@ -5,7 +5,9 @@ export type ChunkingConfig = {
 };
 
 const DEFAULT_MARKERS = ["[MSG]", "<nl>"] as const;
-const DEFAULT_MIN_CHUNK_SIZE = 200;
+// Keep minChunkSize very low - trust the LLM's judgment on where to split.
+// This only prevents truly degenerate single-char fragments.
+const DEFAULT_MIN_CHUNK_SIZE = 3;
 
 export function parseChunkMarkers(config?: ChunkingConfig): string[] {
   if (!config?.enabled) return [];
