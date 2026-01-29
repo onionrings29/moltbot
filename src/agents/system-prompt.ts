@@ -110,6 +110,23 @@ function buildVoiceSection(params: { isMinimal: boolean; ttsHint?: string }) {
   return ["## Voice (TTS)", hint, ""];
 }
 
+function buildChunkingSection(params: {
+  isMinimal: boolean;
+  chunkingEnabled?: boolean;
+  chunkingMarkers?: string[];
+}) {
+  if (params.isMinimal || !params.chunkingEnabled) return [];
+  const markers = params.chunkingMarkers ?? ["[MSG]", "<nl>"];
+  const markerList = markers.map((m) => `\`${m}\``).join(", ");
+  return [
+    "## Message Chunking",
+    `For long responses, split your output into shorter messages using: ${markerList}`,
+    `Example: "Here's the first part.${markers[0]}Here's the second part.${markers[0]}"`,
+    `The markers will be removed and each part sent as a separate message.`,
+    "",
+  ];
+}
+
 function buildDocsSection(params: { docsPath?: string; isMinimal: boolean; readToolName: string }) {
   const docsPath = params.docsPath?.trim();
   if (!docsPath || params.isMinimal) return [];
@@ -177,6 +194,11 @@ export function buildAgentSystemPrompt(params: {
   reactionGuidance?: {
     level: "minimal" | "extensive";
     channel: string;
+  };
+  /** Chunking configuration for LLM-directed message splitting. */
+  chunking?: {
+    enabled?: boolean;
+    markers?: string[];
   };
 }) {
   const coreToolSummaries: Record<string, string> = {
@@ -459,6 +481,11 @@ export function buildAgentSystemPrompt(params: {
       messageToolHints: params.messageToolHints,
     }),
     ...buildVoiceSection({ isMinimal, ttsHint: params.ttsHint }),
+    ...buildChunkingSection({
+      isMinimal,
+      chunkingEnabled: params.chunking?.enabled,
+      chunkingMarkers: params.chunking?.markers,
+    }),
   ];
 
   if (extraSystemPrompt) {

@@ -5,6 +5,11 @@ import {
   resolveTextChunkLimit,
 } from "../../auto-reply/chunk.js";
 import type { ReplyPayload } from "../../auto-reply/types.js";
+import {
+  parseChunkMarkers,
+  splitByChunkMarkers,
+  type ChunkingConfig,
+} from "../../auto-reply/chunk-markers.js";
 import { resolveChannelMediaMaxBytes } from "../../channels/plugins/media-limits.js";
 import { loadChannelOutboundAdapter } from "../../channels/plugins/outbound/load.js";
 import type { ChannelOutboundAdapter } from "../../channels/plugins/types.js";
@@ -174,6 +179,33 @@ function createPluginHandler(params: {
   };
 }
 
+export function applyChunkMarkersToPayloads(
+  payloads: ReplyPayload[],
+  chunkingConfig?: ChunkingConfig,
+): ReplyPayload[] {
+  const markers = parseChunkMarkers(chunkingConfig);
+  if (markers.length === 0) return payloads;
+
+  const result: ReplyPayload[] = [];
+
+  for (const payload of payloads) {
+    if (!payload.text) {
+      result.push(payload);
+      continue;
+    }
+
+    const chunks = splitByChunkMarkers(payload.text, markers, {
+      minChunkSize: chunkingConfig?.minChunkSize,
+    });
+
+    for (const chunk of chunks) {
+      result.push({ ...payload, text: chunk });
+    }
+  }
+
+  return result;
+}
+
 export async function deliverOutboundPayloads(params: {
   cfg: MoltbotConfig;
   channel: Exclude<OutboundChannel, "none">;
@@ -312,7 +344,11 @@ export async function deliverOutboundPayloads(params: {
     };
   };
   const normalizedPayloads = normalizeReplyPayloadsForDelivery(payloads);
-  for (const payload of normalizedPayloads) {
+  // Apply chunk marker splitting BEFORE other processing
+  const chunkingConfig = cfg.agents?.defaults?.chunking;
+  const chunkedPayloads = applyChunkMarkersToPayloads(normalizedPayloads, chunkingConfig);
+
+  for (const payload of chunkedPayloads) {
     const payloadSummary: NormalizedOutboundPayload = {
       text: payload.text ?? "",
       mediaUrls: payload.mediaUrls ?? (payload.mediaUrl ? [payload.mediaUrl] : []),

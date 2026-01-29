@@ -334,6 +334,9 @@ export async function runEmbeddedAttempt(
     });
     const ttsHint = params.config ? buildTtsSystemPromptHint(params.config) : undefined;
 
+    // Extract chunking config from agent config
+    const chunkingConfig = params.config?.agents?.defaults?.chunking;
+
     const appendPrompt = buildEmbeddedSystemPrompt({
       workspaceDir: effectiveWorkspace,
       defaultThinkLevel: params.thinkLevel,
@@ -350,6 +353,7 @@ export async function runEmbeddedAttempt(
       workspaceNotes,
       reactionGuidance,
       promptMode,
+      chunking: chunkingConfig,
       runtimeInfo,
       messageToolHints,
       sandboxInfo,

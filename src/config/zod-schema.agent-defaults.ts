@@ -167,6 +167,14 @@ export const AgentDefaultsSchema = z
       })
       .strict()
       .optional(),
+    chunking: z
+      .object({
+        enabled: z.boolean().optional(),
+        markers: z.array(z.string()).optional(),
+        minChunkSize: z.number().int().positive().optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict()
   .optional();

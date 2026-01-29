@@ -235,6 +235,15 @@ export type AgentDefaultsConfig = {
     /** Auto-prune sandbox containers. */
     prune?: SandboxPruneSettings;
   };
+  /** LLM-directed message chunking (split long responses using markers). */
+  chunking?: {
+    /** Enable chunking via special markers (default: false). */
+    enabled?: boolean;
+    /** Markers that trigger message split (default: ["[MSG]", "<nl>"]). */
+    markers?: string[];
+    /** Minimum characters per chunk; smaller chunks are merged (default: 200). */
+    minChunkSize?: number;
+  };
 };
 
 export type AgentCompactionMode = "default" | "safeguard";
